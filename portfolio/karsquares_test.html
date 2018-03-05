@@ -92,9 +92,13 @@
     <script>
 
       var url = 'json/' + state + '_incumbency.json';
-      var jsonData.src = url
+      var jsonData = d3.json(url, function(error, data) {
+          if (error)
+            throw error;
+          console.log(data);
+        });
 
-      var mydata = JSON.parse(jsonData);
+    var mydata = JSON.parse(jsonData);
 
     //get list of all parties
             var allParties = []
