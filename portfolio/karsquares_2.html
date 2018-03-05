@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro|Montserrat" rel="stylesheet">
+    <link rel="stylesheet" href="/Users/shivangi/Downloads/chosen_v1.8.3/chosen.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/randomcolor/0.5.2/randomColor.min.js"></script>
+    <script data-require="d3@4.0.0" data-semver="4.0.0" src="https://d3js.org/d3.v4.min.js"></script>
+    <script type="text/javascript" src="https://rawgit.com/susielu/d3-legend/master/d3-legend.min.js"></script>
+    <script type="text/javascript" src="json/Tripura_incumbency.json"></script>
+<style>
+    div.tooltip {   
+          position: absolute;           
+          text-align: left;                           
+          padding: 2px;             
+          font: 1vw 'Source Sans Pro';
+          color: white;      
+          background: black;   
+          border: 0px; 
+          border-color: black;     
+          border-radius: 2px;           
+          pointer-events: none;         
+}
+
+      .axis path,
+        .axis line {
+            fill: none;
+            stroke: black;
+            shape-rendering: crispEdges;
+        }
+
+        .axis text {
+            font-family: 'Source Sans Pro';
+            font-size: 20px;
+        }
+
+        .label {
+          font-family: 'Source Sans Pro';
+          font-size: 15px;
+        }
+
+        .d3-legend text {
+          font-family: 'Source Sans Pro';
+          font-size: 15px;
+        }
+
+</style>
+  </head>
+
+  <body>
+
+    <select id = "states">
+      <option value='Karnataka'>Karnataka</option> 
+      <option value='Meghalaya'>Meghalaya</option> 
+      <option value='Nagaland'>Nagaland</option>
+      <option value='Tripura' selected="selected">Tripura</option> 
+  </select>   
+
+    <input type = 'text' id = 'search'>
+
+    <select id = "assemblies">
+      <option value=2>2nd Assembly</option>
+      <option value=3>3rd Assembly</option>
+      <option value=4>4th Assembly</option> 
+      <option value=5>5th Assembly</option>
+      <option value=6>6th Assembly</option> 
+      <option value=7>7th Assembly</option> 
+      <option value=8>8th Assembly</option>
+      <option value=9 selected="selected">9th Assembly</option> 
+  </select>   
+
+  <select id = "numbers">
+      <option value=0 selected='selected'>None</option> 
+      <option value=1>Times Won</option>
+      <option value=2>Times Contested</option> 
+  </select>
+
+  <select id = "wonlost"> 
+      <option value=0 selected='selected'>All</option> 
+      <option value=1>Won</option>
+      <option value=2>Lost</option>
+  </select>
+
+  <select id = "turncoats"> 
+      <option value=2>All</option> 
+      <option value=1>Turncoats</option>
+      <option value=0 selected='selected'>Previously Contested</option>
+  </select>
+
+  <br>
+    
+    <script>
+
+    var stateGraph = function(state) {
+
+      var url = 'json/' + state + '_incumbency.json';
+            $(function(){
+              $.getJSON(url,function(data){
+                  var jsonData = data;
+                  console.log('json loaded successfully');
+              }).error(function(){
+                  console.log('error: json not loaded');
+              });
+          });
+
+    var mydata = JSON.parse(jsonData);
+
+    //get list of all parties
+            var allParties = []
+            for (i = 0; i < mydata.length; i++) {
+              if (!(allParties.includes(mydata[i].Party))) {
+                allParties.push(mydata[i].Party);
+              }
+              if (!(allParties.includes(mydata[i].Last_party))) {
+                allParties.push(mydata[i].Last_party);
+              }
+            }
+
+            //generate colour range for parties
+            var colourRange = randomColor({
+               count: allParties.length,
+               luminosity: 'dark',
+               format: 'rgb' // e.g. 'rgb(225,200,20)' 
+            });
+
+            //dict of party and colour
+            var partyColours = {}
+            for (i = 0; i < allParties.length; i++) {
+                partyColours[allParties[i]] = colourRange[i];
+            }
+
+            partyColours['BJP'] = '#ff9933'
+            partyColours['INC'] = '#138808'
+            partyColours['INC(I)'] = '#138808'
+            partyColours['IND'] = '#008080'
+            partyColours['JD'] = '#ff005c'
+            partyColours['AIRJP'] = '#009999'
+            partyColours['SP'] = '#990000'
+            partyColours['JD(U)'] = '#ff005c'
+            partyColours['BSP'] = '#99003d'
+            partyColours['NCP'] = '#ff0000'
+            partyColours['HSPDP'] = '#ffcc00'
+            partyColours['None'] = '#707070'
+            partyColours['JP'] = '#536896'
+            partyColours['JNP'] = '#536896'
+            partyColours['JNP(JP)'] = '#536896'
+
+
+            var partyNames = {'INC': 'Indian National Congress', 'KJP': 'Karnataka Janata Paksha', 'IND': 'Independent', 'CPI': 'Communist Party of India', 'JD(S)': 'Janata Dal (Secular)', 'NPF': 'Naga People\'s Front', 'SP': 'Samajwadi Party', 'RMP': 'Revolutionary Marxist Party', 'INC(I)': 'Indian National Congress (I)', 'JNP(JP)': 'Janata Party', 'BJP': 'Bharatiya Janata Party', 'JNP(SC)': 'Janata Party (SC)', 'JNP': 'Janata Party', 'JD': 'Janata Dal', 'AIRJP': 'All India Rashtriya Janata Party', 'JD(U)': 'Janata Dal United', 'NCP': 'National Communist Party', 'None': 'None', 'Other': 'Other', 'BSRCP': 'Badagara Shramika Raitala Congress', 'JP': 'Janata Party', 'CPM': 'Communist Party of India (Marxist)', 'UDP': 'United Democratic Party', 'HSPDP': 'Hill State People\'s Democratic Party', 'NPP': 'National People\'s Party'}
+
+        var generateGraph = function(mydata, assemblyNo, nums, wonlost, turncoats, searchTerm) {
+
+            var div = d3.select("body").append("div")   
+                                    .attr("class", "tooltip")               
+                                    .style("opacity", 0);
+
+            var topParties = ['INC', 'IND', 'BJP', 'None', 'Other']
+
+            //get current assembly entries
+            var currentAssembly = mydata.filter(function(i) {
+              return i.Assembly_No === assemblyNo;
+            });
+
+            if (wonlost == 1) {
+              var currentAssembly = currentAssembly.filter(function(i) {
+                return i.Position === 1;
+              });
+            }
+
+            if (wonlost == 2) {
+              var currentAssembly = currentAssembly.filter(function(i) {
+                return i.Position > 1;
+              });
+            }
+
+            if (turncoats == 1 ) {
+              var currentAssembly = currentAssembly.filter(function(i) {
+                return i.Turncoat === 'Yes';
+              });
+            }
+
+            if (turncoats == 0) {
+              var currentAssembly = currentAssembly.filter(function(i) {
+                return i.Contested > 1;
+              });
+            }
+
+            //currentAssembly = currentAssembly.filter(function(e){return e});
+
+            //get current assembly parties
+            var lookup = {};
+            var items = currentAssembly;
+            var parties = [];
+
+            for (var item, i = 0; item = items[i++];) {
+              var Party = item.Party;
+
+              if (!(Party in lookup)) {
+                lookup[Party] = 1;
+                parties.push(Party);
+              }
+            }
+
+            //get current assembly entries by party
+            var partywise = []
+            for (i = 0; i < parties.length; i++) {
+              var currentParty = parties[i];
+              var currentEntries = currentAssembly.filter(function(i) {
+                if (currentParty == 'IND') {
+                  return (i.Party === currentParty && i.Last_party != 'None');
+                }
+                else {
+                  return (i.Party === currentParty);
+                }
+            });
+              partywise.push(currentEntries);
+            }
+
+            //get important parties
+            var xMax = 0;
+            var numCand = 0;
+            for (k = 0; k < partywise.length; k++) {
+              numCand += partywise[k].length;
+              if (partywise[k].length > xMax) {
+                xMax = partywise[k].length;
+              }
+            }
+
+            var inclusionFactor = numCand*0.05;
+            for (k = 0; k < partywise.length; k++) {
+              if (partywise[k].length > inclusionFactor && topParties.indexOf(partywise[k][0].Party) < 0) {
+                topParties.push(partywise[k][0].Party);
+              }
+            }
+
+            //'other' irrelevant parties
+            for (i = 0; i < mydata.length; i++) {
+             if (typeof(mydata[i].Last_party) === 'undefined') {
+               mydata[i].Last_party = 'None';
+             }
+              mydata[i].Oth_Current = mydata[i].Party;
+              mydata[i].Oth_Last = mydata[i].Last_party;
+              if (!(topParties.includes(mydata[i].Party)) && !(topParties.includes(mydata[i].Last_party))) {
+                mydata[i].Oth_Current = mydata[i].Party;
+                mydata[i].Party = 'Other';
+                mydata[i].Oth_Last = mydata[i].Last_party;
+                mydata[i].Last_party = 'Other';
+              }
+              else if (!(topParties.includes(mydata[i].Party))) {
+                mydata[i].Oth_Current = mydata[i].Party;
+                mydata[i].Party = 'Other';
+              }
+              else if (!(topParties.includes(mydata[i].Last_party))) {
+                mydata[i].Oth_Last = mydata[i].Last_party;
+                mydata[i].Last_party = 'Other';
+              }
+            }
+
+            //get current assembly parties
+            var lookup = {};
+            var items = currentAssembly;
+            var parties = [];
+
+            for (var item, i = 0; item = items[i++];) {
+              var Party = item.Party;
+
+              if (!(Party in lookup)) {
+                lookup[Party] = 1;
+                parties.push(Party);
+              }
+            }
+
+            //sort parties in alphabetical order
+            parties.sort();
+
+            //get current assembly entries by party
+            var partywise = []
+            for (i = 0; i < parties.length; i++) {
+              var currentParty = parties[i];
+              var currentEntries = currentAssembly.filter(function(i) {
+                if (currentParty == 'IND') {
+                  return (i.Party === currentParty && i.Last_party != 'None');
+                }
+                else {
+                  return (i.Party === currentParty);
+                }
+            });
+              partywise.push(currentEntries);
+            }
+
+            //sort other by last party and move 'none' to end
+            if (parties.indexOf('Other') > -1) {
+              partywise[parties.indexOf('Other')].sort(function(a,b) {return (a.Last_party > b.Last_party) ? 1 : ((b.Last_party > a.Last_party) ? -1 : 0);} ); 
+             partywise[parties.indexOf('Other')].forEach(function(v, i) {
+              if (v.Last_party == 'None') {
+                partywise[parties.indexOf('Other')].push(partywise[parties.indexOf('Other')][i]);
+                partywise[parties.indexOf('Other')].splice(i, 1);
+              }
+            })
+             partywise[parties.indexOf('Other')].forEach(function(v, i) {
+                if (v.Position === 1) {
+                    var a = partywise[parties.indexOf('Other')].splice(i,1);   // removes the item
+                    partywise[parties.indexOf('Other')].unshift(a[0]);         // adds it back to the beginning
+                }
+            })
+            }
+            
+            //create legendParties array
+            var legendParties = []
+            for (i = 0; i < partywise.length; i++) {
+              legendParties.push(partywise[i][0].Party)
+            }
+
+            //get colour range for legend parties
+            var legendColours = []
+            for (i = 0; i < legendParties.length; i++) {
+              legendColours.push(partyColours[legendParties[i]])
+            }
+
+            //declare colour scale
+            var colourScale = d3.scaleOrdinal()
+              .domain(legendParties)
+              .range(legendColours);
+         
+    var xMax = 0;
+    for (k = 0; k < partywise.length; k++) {
+      if (partywise[k].length > xMax) {
+        xMax = partywise[k].length;
+      }
+    }
+
+    var symbolSize = 180
+    var rowMax = 5
+    var topMargin = 30
+    var squareDim = 12, // pixel dimensions of square
+        // width = xMax * 17; // horizontal
+        // height = partywise.length * (squareDim + 2); // horizontal
+    width = (rowMax + 1) * partywise.length * (Math.sqrt(symbolSize) + 3); // horizontal
+    var height = (topMargin + xMax/rowMax) * (Math.sqrt(symbolSize));
+    //var height = 1000 //vertical
+    var legendMargin = 300
+    
+        
+    var svg = d3.select('body')
+      .append('svg')
+      .attr('width', width+legendMargin)
+      .attr('height', height);
+
+          //create symbol legend
+      circle = d3.symbol().type(d3.symbolCircle).size(200)();
+      square = d3.symbol().type(d3.symbolSquare).size(200)();
+
+      var symbolScale =  d3.scaleOrdinal()
+        .domain(['Winner','Loser'])
+        .range([square, circle] );
+
+      var graph = d3.select("svg");
+
+      graph.append("g")
+        .attr("class", "legendSymbol")
+        .attr("transform", "translate("+ (width + 20) +", 100)");
+
+      var legendPath = d3.legendSymbol()
+        .scale(symbolScale)
+        .orient("vertical")
+
+
+      svg.select(".legendSymbol")
+        .call(legendPath); 
+
+    //generate shapes
+     col = -rowMax
+     row = -1
+     for (k=0; k<partywise.length; k++) {
+      svg.selectAll('u')
+        .data(partywise[k])
+        .enter()
+        .append('path')
+        .attr('d', d3.symbol().type(function(d) {
+          if (d.Position == 1) {
+            return d3.symbolSquare;
+          }
+          else {
+            return d3.symbolCircle;
+          }
+        })
+        .size(function(d, i) {
+          return symbolSize;
+        }))
+        .attr("transform", function(d, i) {
+          if (i == 0) {
+          col += rowMax + 1;
+        }
+          var x = ((i % rowMax) + col) * (symbolSize / 11);
+          if (i % rowMax == 0 && i != 0) {
+          row += 1;
+        }
+          if (i == 0) {
+            row = 0;
+          }
+          var y = (row + 3) * (symbolSize/10);
+        return "translate(" + x + "," + y + ")"
+        })
+        .attr("currentParty", function(d, i) {
+            if (typeof(d) === 'undefined') {
+                return 0;
+            }
+            else if (d.Party === 'Other') {
+              return d.Oth_Current;
+            }
+          else {
+              return (partyNames[d.Party]);}
+          })
+        .attr("lastParty", function(d, i) {
+            if (typeof(d) === 'undefined') {
+                return 0;
+            }
+            if (typeof(d.Last_party) === 'undefined') {
+              return ('None');
+            }
+            else if (d.Last_party === 'Other') {
+              return d.Oth_Last;
+            }
+            else {
+                return partyNames[d.Last_party];}
+            })
+        .attr("name", function(d, i) {
+            if (typeof(d) === 'undefined') {
+                return 0;
+            }
+            else {
+                return (d.Candidate);}
+            })
+        .attr("acName", function(d, i){
+          return d.Constituency_Name;
+        })
+        .attr("position", function(d, i){
+          return d.Position;
+        })
+        .style("fill", function(d, i) {
+            if (typeof(d) === 'undefined') {
+                return 0;
+            }
+            if (typeof(d.Last_party) === 'undefined') {
+                return partyColours['None'];
+            }
+            else {
+                return partyColours[d.Last_party];
+            }
+          })
+        .on("mouseover", function(d, i) {
+                                d3.select(this)
+                                  .transition()
+                                  .duration(200)
+                                  .style('opacity', 0.5)
+                                div.transition()    
+                                    .duration(200)    
+                                    .style("opacity", .9); 
+                                    div .html(function() {
+                                            var candHistory = mydata.filter(function(k) {
+                                              return (k.pid == d.pid && d.Assembly_No > k.Assembly_No);
+                                            });
+
+                                            candHistory.sort(function(a,b) {return b.Assembly_No - a.Assembly_No});
+                                            var tooltipText = d.Candidate + "<hr>" + d.Constituency_Name + ", " + d.Year + ", " + d.Oth_Current + ", #" + d.Position
+                                            candHistory.forEach(function(k) {
+                                              tooltipText += "<br/>" + k.Constituency_Name + ", " + k.Year + ", " + k.Oth_Current + ", #" + k.Position
+                                            })
+                                            return tooltipText;
+                                        })
+                                    .style("left", (d3.event.pageX) + "px")   
+                                    .style("top", (d3.event.pageY - 28) + "px");  
+                                })          
+                            .on("mouseout", function(d) { 
+                                d3.select(this)
+                                  .transition()
+                                  .duration(200)
+                                  .style('opacity', 1) 
+                                div.transition()    
+                                    .duration(500)    
+                                    .style("opacity", 0); 
+                            });
+        }
+
+        //generate search shapes
+        var pattern = new RegExp(searchTerm, 'i')
+        col = -rowMax
+       row = -1
+       for (k=0; k<partywise.length; k++) {
+        svg.selectAll('u')
+          .data(partywise[k])
+          .enter()
+          .append('path')
+          .attr('d', d3.symbol().type(function(d) {
+            if (d.Position == 1) {
+              return d3.symbolSquare;
+            }
+            else {
+              return d3.symbolCircle;
+            }
+          })
+          .size(function(d, i) {
+            return symbolSize*0.6;
+          }))
+          .attr("transform", function(d, i) {
+            if (i == 0) {
+            col += rowMax + 1;
+          }
+            var x = ((i % rowMax) + col) * (symbolSize / 11);
+            if (i % rowMax == 0 && i != 0) {
+            row += 1;
+          }
+            if (i == 0) {
+              row = 0;
+            }
+            var y = (row + 3) * (symbolSize/10);
+          return "translate(" + x + "," + y + ")"
+          })
+          .attr("currentParty", function(d, i) {
+              if (typeof(d) === 'undefined') {
+                  return 0;
+              }
+              else if (d.Party === 'Other') {
+                return d.Oth_Current;
+              }
+            else {
+                return (partyNames[d.Party]);}
+            })
+          .attr("lastParty", function(d, i) {
+              if (typeof(d) === 'undefined') {
+                  return 0;
+              }
+              if (typeof(d.Last_party) === 'undefined') {
+                return ('None');
+              }
+              else if (d.Last_party === 'Other') {
+                return d.Oth_Last;
+              }
+              else {
+                  return partyNames[d.Last_party];}
+              })
+          .style("fill", function(d, i) {
+              if (typeof(d) === 'undefined') {
+                  return 0;
+              }
+              if (typeof(d.Last_party) === 'undefined') {
+                  return partyColours['None'];
+              }
+              if (!pattern.test(d.Candidate) && !pattern.test(d.Constituency_Name)) {
+                return '#ffffff'
+              }
+              else {
+                  return partyColours[d.Last_party];
+              }
+            })
+          .on("mouseover", function(d, i) {
+                                  d3.select(this)
+                                    .transition()
+                                    .duration(200)
+                                    .style('opacity', 0.5)
+                                  div.transition()    
+                                      .duration(200)    
+                                      .style("opacity", .9); 
+                                      div .html(function() {
+                                            var candHistory = mydata.filter(function(k) {
+                                              return (k.pid == d.pid && d.Assembly_No > k.Assembly_No);
+                                            });
+                                            candHistory.sort(function(a,b) {return b.Assembly_No - a.Assembly_No});
+                                            var tooltipText = d.Candidate + "<hr>" + d.Constituency_Name + ", " + d.Year + ", " + d.Oth_Current + ", #" + d.Position
+                                            candHistory.forEach(function(k) {
+                                              tooltipText += "<br/>" + k.Constituency_Name + ", " + k.Year + ", " + k.Oth_Current + ", #" + k.Position
+                                            })
+                                            return tooltipText;
+                                        })
+                                      .style("left", (d3.event.pageX) + "px")   
+                                      .style("top", (d3.event.pageY - 28) + "px");  
+                                  })          
+                              .on("mouseout", function(d) { 
+                                  d3.select(this)
+                                    .transition()
+                                    .duration(200)
+                                    .style('opacity', 1) 
+                                  div.transition()    
+                                      .duration(500)    
+                                      .style("opacity", 0); 
+                              });
+          }
+
+        //generate text
+          if (nums > 0) {
+           col = -rowMax
+           row = -1
+           letterArray = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
+           for (j = 0; j < partywise.length; j++) {
+            svg.selectAll(letterArray[j])
+              .data(partywise[j])
+              .enter()
+              .append('text')
+              .attr("x", function(d, i) {
+                if (i == 0) {
+                col += rowMax + 1;
+              }
+              if (nums == 2) {
+                if (d.Contested > 9) {
+                  return ((i % rowMax) + col) * (symbolSize / 11) - 7;
+                }
+                else {
+                  return ((i % rowMax) + col) * (symbolSize / 11) - 4;          
+                }
+              }
+              if (nums == 1) {
+                if (d.No_Mandates > 9) {
+                  return ((i % rowMax) + col) * (symbolSize / 11) - 7;
+                }
+                else {
+                  return ((i % rowMax) + col) * (symbolSize / 11) - 3;          
+                }
+              }
+
+              })
+              .attr("y", function(d, i) {
+                if (i % rowMax == 0 && i != 0) {
+                row += 1;
+              }
+                if (i == 0) {
+                  row = 0;
+                }
+                return (row + 3) * (symbolSize/10) + 4;
+              })
+              .text(function(d) {
+                if (nums == 2) {
+                  if (d.Contested > 1) {
+                    return d.Contested;
+                  }
+                }
+                if (nums == 1) {
+                  if (d.No_Mandates > 0) {
+                    return d.No_Mandates;
+                  }
+                }
+              })
+              .attr("currentParty", function(d, i) {
+                  if (typeof(d) === 'undefined') {
+                      return 0;
+                  }
+                  else if (d.Party === 'Other') {
+                    return d.Oth_Current;
+                  }
+                else {
+                    return (partyNames[d.Party]);}
+                })
+              .attr("lastParty", function(d, i) {
+                  if (typeof(d) === 'undefined') {
+                      return 0;
+                  }
+                  if (typeof(d.Last_party) === 'undefined') {
+                    return ('None');
+                  }
+                  else if (d.Last_party === 'Other') {
+                    return d.Oth_Last;
+                  }
+                  else {
+                      return partyNames[d.Last_party];}
+                  })
+              .attr("name", function(d, i) {
+                  if (typeof(d) === 'undefined') {
+                      return 0;
+                  }
+                  else {
+                      return (d.Candidate);}
+                  })
+              .attr("acName", function(d, i){
+                return d.Constituency_Name;
+              })
+              .attr("position", function(d, i){
+                return d.Position;
+              })
+              .style("fill", 'white')
+              .style("font-family", 'Montserrat')
+              .style("font-size", function(d) {
+                if (nums == 2) {
+                  if (d.Contested > 9) {
+                    return '10px';
+                  }
+                  else {
+                    return '11px';
+                  }
+                }
+                if (nums == 1) {
+                  if (d.No_Mandates > 9) {
+                    return '10px';
+                  }
+                  else {
+                    return '11px';
+                  }
+                }
+              })
+              .on("mouseover", function(d, i) {
+                                      div.transition()    
+                                          .duration(200)    
+                                          .style("opacity", .9); 
+                                          div .html(function() {
+                                            var candHistory = mydata.filter(function(k) {
+                                              return (k.pid == d.pid && d.Assembly_No > k.Assembly_No);
+                                            });
+                                            candHistory.sort(function(a,b) {return b.Assembly_No - a.Assembly_No});
+                                            var tooltipText = d.Candidate + "<hr>" + d.Constituency_Name + ", " + d.Year + ", " + d.Oth_Current + ", #" + d.Position
+                                            candHistory.forEach(function(k) {
+                                              tooltipText += "<br/>" + k.Constituency_Name + ", " + k.Year + ", " + k.Oth_Current + ", #" + k.Position
+                                            })
+                                            return tooltipText;
+                                        }) 
+                                          .style("left", (d3.event.pageX) + "px")   
+                                          .style("top", (d3.event.pageY - 28) + "px");  
+                                      })          
+                                  .on("mouseout", function(d) { 
+                                      div.transition()    
+                                          .duration(500)    
+                                          .style("opacity", 0); 
+                                  });
+      }
+    }
+
+      //create legend
+            svg.append("g")
+              .attr("class", "legendOrdinal")
+              .attr("transform", "translate(" + width/(partywise.length*2.5) +"," + 5 + ")");
+
+            var legendOrdinal = d3.legendColor()
+              .orient('horizontal')
+              //.shape("path", d3.symbol().type(d3.symbolTriangle).size(100)())
+              .shapeWidth(25)
+              .shapePadding(width/(partywise.length*1.35))
+              .scale(colourScale);
+
+            svg.select(".legendOrdinal")
+                .call(legendOrdinal);
+
+  
+    }
+
+        generateGraph(mydata, 9, 0, 0, 0, '');
+
+        // handle on click event
+        d3.select('#assemblies')
+          .on('change', function() {
+            var assemblyNo = eval(d3.select(this).property('value'));
+            var nums = eval(d3.select('#numbers').property('value'));
+            var wonlost = eval(d3.select('#wonlost').property('value'));
+            var turncoats = eval(d3.select('#turncoats').property('value'));
+            var searchTerm = d3.select('#search').property('value');
+            d3.selectAll("svg").transition().duration(400).style("opacity", 0).remove();
+            generateGraph(mydata, assemblyNo, nums, wonlost, turncoats, searchTerm);
+        });
+
+        d3.select('#numbers')
+          .on('change', function() {
+            var nums = eval(d3.select(this).property('value'));
+            var assemblyNo = eval(d3.select('#assemblies').property('value'));
+            var turncoats = eval(d3.select('#turncoats').property('value'));
+            var wonlost = eval(d3.select('#wonlost').property('value'));
+            var searchTerm = d3.select('#search').property('value');
+            d3.selectAll("svg > text").transition().duration(400).style("opacity", 0).remove();
+            d3.selectAll("svg").transition().duration(0).style("opacity", 0).remove();
+            generateGraph(mydata, assemblyNo, nums, wonlost, turncoats, searchTerm);
+        });
+
+        d3.select('#wonlost')
+          .on('change', function() {
+            var nums = eval(d3.select('#numbers').property('value'));
+            var assemblyNo = eval(d3.select('#assemblies').property('value'));
+            var turncoats = eval(d3.select('#turncoats').property('value'));
+            var wonlost = eval(d3.select(this).property('value'));
+            var searchTerm = d3.select('#search').property('value');
+            d3.selectAll("svg").transition().duration(400).style("opacity", 0).remove();
+            generateGraph(mydata, assemblyNo, nums, wonlost, turncoats, searchTerm);
+        });
+
+        d3.select('#turncoats')
+          .on('change', function() {
+            var nums = eval(d3.select('#numbers').property('value'));
+            var assemblyNo = eval(d3.select('#assemblies').property('value'));
+            var wonlost = eval(d3.select('#wonlost').property('value'));
+            var turncoats = eval(d3.select(this).property('value'));
+            var searchTerm = d3.select('#search').property('value');
+            d3.selectAll("svg").transition().duration(400).style("opacity", 0).remove();
+            generateGraph(mydata, assemblyNo, nums, wonlost, turncoats, searchTerm);
+        });
+
+        d3.select('#search')
+          .on('keyup', function() {
+            var searchTerm = d3.select(this).property('value');
+            var nums = eval(d3.select('#numbers').property('value'));
+            var assemblyNo = eval(d3.select('#assemblies').property('value'));
+            var turncoats = eval(d3.select('#turncoats').property('value'));
+            var wonlost = eval(d3.select('#wonlost').property('value'));
+            d3.selectAll("svg").transition().duration(400).style("opacity", 0).remove();
+            generateGraph(mydata, assemblyNo, nums, wonlost, turncoats, searchTerm);
+            console.log(searchTerm);
+          })
+          
+    }
+
+    //select state
+    d3.select('#states')
+          .on('change', function() {
+            var state = d3.select(this).property('value');
+            // var searchTerm = d3.select(this).property('value');
+            // var nums = eval(d3.select('#numbers').property('value'));
+            // var assemblyNo = eval(d3.select('#assemblies').property('value'));
+            // var turncoats = eval(d3.select('#turncoats').property('value'));
+            // var wonlost = eval(d3.select('#wonlost').property('value'));
+            // d3.selectAll("svg").transition().duration(400).style("opacity", 0).remove();
+            // generateGraph(mydata, assemblyNo, nums, wonlost, turncoats, searchTerm);
+            // console.log(searchTerm);
+            stateGraph(state)
+          })
+
+
+    stateGraph('Tripura');
+
+    </script>
+    
+  </body>
+
+</html>
