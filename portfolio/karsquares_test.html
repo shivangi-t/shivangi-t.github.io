@@ -94,13 +94,11 @@
    var stateGraph = function(state) {
 
       var url = 'json/' + state + '_incumbency.json';
-      var jsonData = d3.json(url, function(error, data) {
+      var mydata = d3.json(url, function(error, data) {
           if (error)
             throw error;
           console.log(data);
         });
-
-    var mydata = JSON.parse(jsonData);
 
     //get list of all parties
             var allParties = []
