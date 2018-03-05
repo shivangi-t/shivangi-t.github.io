@@ -3,7 +3,6 @@
 
   <head>
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro|Montserrat" rel="stylesheet">
-    <link rel="stylesheet" href="/Users/shivangi/Downloads/chosen_v1.8.3/chosen.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/randomcolor/0.5.2/randomColor.min.js"></script>
     <script data-require="d3@4.0.0" data-semver="4.0.0" src="https://d3js.org/d3.v4.min.js"></script>
@@ -95,14 +94,12 @@
     var stateGraph = function(state) {
 
       var url = 'json/' + state + '_incumbency.json';
-            $(function(){
-              $.getJSON(url,function(data){
+            $.getJSON(url,function(data){
                   var jsonData = data;
                   console.log('json loaded successfully');
               }).error(function(){
                   console.log('error: json not loaded');
               });
-          });
 
     var mydata = JSON.parse(jsonData);
 
