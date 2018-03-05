@@ -91,15 +91,34 @@
     
     <script>
 
+    var getJSON = function(url, callback) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('get', url, true);
+      xhr.responseType = 'json';
+      xhr.onload = function() {
+        var status = xhr.status;
+        if (status == 200) {
+          callback(null, xhr.response);
+        } else {
+          callback(status);
+        }
+      };
+      xhr.send();
+    };
+
     var stateGraph = function(state) {
 
+
+
       var url = 'json/' + state + '_incumbency.json';
-            $.getJSON(url,function(data){
-                  var jsonData = data;
-                  console.log('json loaded successfully');
-              }).error(function(){
-                  console.log('error: json not loaded');
-              });
+      getJSON(url, function(err, data) {
+      if (err != null) {
+        alert('Something went wrong: ' + err);
+      } else {
+          alert('Your Json result is:  ' + data.result);
+          result.innerText = data.result;
+        }
+      });
 
     var mydata = JSON.parse(jsonData);
 
