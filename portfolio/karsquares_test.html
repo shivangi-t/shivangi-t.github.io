@@ -792,9 +792,8 @@
             d3.selectAll("svg").transition().duration(400).style("opacity", 0).remove();
             generateGraph(mydata, assemblyNo, nums, wonlost, turncoats, searchTerm);
             console.log(searchTerm);
-          })
+          });
           
-    }
 
     //select state
     d3.select('#states')
@@ -809,7 +808,7 @@
             // generateGraph(mydata, assemblyNo, nums, wonlost, turncoats, searchTerm);
             // console.log(searchTerm);
             stateGraph(state)
-          })
+          });
 
 
     stateGraph('Tripura');
