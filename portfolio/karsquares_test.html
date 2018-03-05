@@ -91,6 +91,8 @@
     
     <script>
 
+   var stateGraph = function(state) {
+
       var url = 'json/' + state + '_incumbency.json';
       var jsonData = d3.json(url, function(error, data) {
           if (error)
@@ -735,6 +737,8 @@
     }
 
         generateGraph(mydata, 9, 0, 0, 0, '');
+
+      }
 
         // handle on click event
         d3.select('#assemblies')
