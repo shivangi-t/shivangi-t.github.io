@@ -12,7 +12,7 @@
     div.tooltip {   
           position: absolute;           
           text-align: left;                           
-          padding: 2px;             
+          padding: 8px;             
           font: 1vw 'Source Sans Pro';
           color: white;      
           background: black;   
@@ -44,6 +44,23 @@
           font-size: 15px;
         }
 
+        label, select {
+            display: inline-block;
+            width: 100px;
+        }
+
+        label {
+            position: relative;
+            top: -1.2em;
+            left: 5px;
+            font-family: 'Source Sans Pro';
+            text-align: center;
+        }
+
+        select {
+            margin: 1.5em 0 0 -100px;
+        }
+
 </style>
   </head>
 
@@ -51,6 +68,8 @@
 
     <input type = 'text' id = 'search'>
 
+
+    <label for="assemblies">Assembly</label>
     <select id = "assemblies">
       <option value=2>2nd Assembly</option>
       <option value=3>3rd Assembly</option> 
@@ -63,25 +82,28 @@
 
   </select>   
 
+  <label for="assemblies">Number</label>
   <select id = "numbers">
       <option value=0 selected='selected'>None</option> 
       <option value=1>Times Won</option>
       <option value=2>Times Contested</option> 
   </select>
 
+  <label for="assemblies">Position</label>
   <select id = "wonlost"> 
       <option value=0 selected='selected'>All</option> 
       <option value=1>Won</option>
       <option value=2>Lost</option>
   </select>
 
-  <select id = "turncoats"> 
+  <label for="assemblies">Turncoats</label>
+  <select id = "turncoats" width="30px"> 
       <option value=2>All</option> 
       <option value=1>Turncoats</option>
       <option value=0 selected='selected'>Previously Contested</option>
   </select>
 
-  <br>
+  <br><br>
     
     <script>
 
@@ -305,7 +327,7 @@
           }
         })
         .size(function(d, i) {
-          return symbolSize;
+          return symbolSize*0.4;
         }))
         .attr("transform", function(d, i) {
           if (i == 0) {
@@ -368,6 +390,7 @@
                 return partyColours[d.Last_party];
             }
           })
+        //.style('opacity', 0.5)
         .on("mouseover", function(d, i) {
                                 d3.select(this)
                                   .transition()
@@ -420,7 +443,7 @@
             }
           })
           .size(function(d, i) {
-            return symbolSize*0.6;
+            return symbolSize;
           }))
           .attr("transform", function(d, i) {
             if (i == 0) {
@@ -661,7 +684,7 @@
       square = d3.symbol().type(d3.symbolSquare).size(200)();
 
       var symbolScale =  d3.scaleOrdinal()
-        .domain(['Winner in previous election','Loser in previous election'])
+        .domain(['Winner','Loser'])
         .range([square, circle] );
 
       svg.append("g")
