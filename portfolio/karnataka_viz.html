@@ -82,21 +82,21 @@
 
   </select>   
 
-  <label for="assemblies">Label</label>
+  <label for="numbers">Label</label>
   <select id = "numbers">
       <option value=0 selected='selected'>None</option> 
       <option value=1>Times Won</option>
       <option value=2>Times Contested</option> 
   </select>
 
-  <label for="assemblies">Position</label>
-  <select id = "wonlost"> 
+  <label for="wonlost">Position</label>
+  <select id = "wonlost">
       <option value=0 selected='selected'>All</option> 
       <option value=1>Won</option>
       <option value=2>Lost</option>
-  </select>
+  </select> 
 
-  <label for="assemblies">Turncoats</label>
+  <label for="turncoats">Candidates</label>
   <select id = "turncoats" width="30px"> 
       <option value=2>All</option> 
       <option value=1>Turncoats</option>
@@ -115,32 +115,7 @@
     d3.json(url, function(data) {
       mydata = data;
 
-    var topParties = ['INC', 'IND', 'BJP', 'None', 'JD(S)', 'BSRCP', 'KJP', 'SP', 'JP', 'JD', 'INC(I)', 'JNP(JP)', 'JD(U)', 'BSP']
-
-            for (i = 0; i < mydata.length; i++) {
-              if (typeof(mydata[i].Last_party) === 'undefined') {
-                mydata[i].Last_party = 'None';
-              }
-              mydata[i].Oth_Current = mydata[i].Party;
-              mydata[i].Oth_Last = mydata[i].Last_party;
-              if (!(topParties.includes(mydata[i].Party)) && !(topParties.includes(mydata[i].Last_party))) {
-                mydata[i].Oth_Current = mydata[i].Party;
-                mydata[i].Party = 'Other';
-                mydata[i].Oth_Last = mydata[i].Last_party;
-                mydata[i].Last_party = 'Other';
-              }
-              else if (!(topParties.includes(mydata[i].Party))) {
-                mydata[i].Oth_Current = mydata[i].Party;
-                mydata[i].Party = 'Other';
-              }
-              else if (!(topParties.includes(mydata[i].Last_party))) {
-                mydata[i].Oth_Last = mydata[i].Last_party;
-                mydata[i].Last_party = 'Other';
-              }
-            }
-
-
-            //get list of all parties
+    //get list of all parties
             var allParties = []
             for (i = 0; i < mydata.length; i++) {
               if (!(allParties.includes(mydata[i].Party))) {
@@ -173,24 +148,25 @@
             partyColours['SP'] = '#990000'
             partyColours['JD(U)'] = '#ff005c'
             partyColours['BSP'] = '#99003d'
-            partyColours['BJNKP'] = '#333300'
-            partyColours['GPP'] = '#ffcc00'
+            partyColours['NCP'] = '#ff0000'
+            partyColours['HSPDP'] = '#ffcc00'
             partyColours['None'] = '#707070'
             partyColours['JP'] = '#536896'
             partyColours['JNP'] = '#536896'
             partyColours['JNP(JP)'] = '#536896'
-            partyColours['Other'] = '#000000'
 
 
-            var partyNames = {'INC': 'Indian National Congress', 'KJP': 'Karnataka Janata Paksha', 'IND': 'Independent', 'CPI': 'Communist Party of India', 'JD(S)': 'Janata Dal (Secular)', 'NPF': 'Naga People\'s Front', 'SP': 'Samajwadi Party', 'RMP': 'Revolutionary Marxist Party', 'INC(I)': 'Indian National Congress (I)', 'JNP(JP)': 'Janata Party', 'BJP': 'Bharatiya Janata Party', 'JNP(SC)': 'Janata Party (SC)', 'JNP': 'Janata Party', 'JD': 'Janata Dal', 'AIRJP': 'All India Rashtriya Janata Party', 'JD(U)': 'Janata Dal United', 'NCP': 'National Communist Party', 'None': 'None', 'Other': 'Other', 'BSRCP': 'Badagara Shramika Raitala Congress', 'JP': 'Janata Party', 'CPM': 'Communist Party of India (Marxist)', 'IPFT': 'Indigenous Peoples Front of Tripura', 'AMB': 'Amra Bangali', 'CPI(ML)(L)': 'Communist Party of India (Marxist Leninist) (Liberation)'}
+            var partyNames = {'INC': 'Indian National Congress', 'KJP': 'Karnataka Janata Paksha', 'IND': 'Independent', 'CPI': 'Communist Party of India', 'JD(S)': 'Janata Dal (Secular)', 'NPF': 'Naga People\'s Front', 'SP': 'Samajwadi Party', 'RMP': 'Revolutionary Marxist Party', 'INC(I)': 'Indian National Congress (I)', 'JNP(JP)': 'Janata Party', 'BJP': 'Bharatiya Janata Party', 'JNP(SC)': 'Janata Party (SC)', 'JNP': 'Janata Party', 'JD': 'Janata Dal', 'AIRJP': 'All India Rashtriya Janata Party', 'JD(U)': 'Janata Dal United', 'NCP': 'National Communist Party', 'None': 'None', 'Other': 'Other', 'BSRCP': 'Badagara Shramika Raitala Congress', 'JP': 'Janata Party', 'CPM': 'Communist Party of India (Marxist)', 'UDP': 'United Democratic Party', 'HSPDP': 'Hill State People\'s Democratic Party', 'NPP': 'National People\'s Party'}
 
-            var generateGraph = function(mydata, assemblyNo, nums, wonlost, turncoats, searchTerm) {
+        var generateGraph = function(mydata, assemblyNo, nums, wonlost, turncoats, searchTerm) {
 
             var div = d3.select("body").append("div")   
                                     .attr("class", "tooltip")               
-                                    .style("opacity", 0); 
+                                    .style("opacity", 0);
 
-            //get current assembly parties
+            var topParties = ['BJP', 'INC', 'IND', 'None']
+
+            //get current assembly entries
             var currentAssembly = mydata.filter(function(i) {
               return i.Assembly_No === assemblyNo;
             });
@@ -219,13 +195,15 @@
               });
             }
 
+            //currentAssembly = currentAssembly.filter(function(e){return e});
+
+            //get current assembly parties
             var lookup = {};
             var items = currentAssembly;
             var parties = [];
 
             for (var item, i = 0; item = items[i++];) {
               var Party = item.Party;
-              console.log(Party);
 
               if (!(Party in lookup)) {
                 lookup[Party] = 1;
@@ -233,63 +211,155 @@
               }
             }
 
-            //sort parties in alphabetical order
-            parties.sort();
-
-            //get current assembly entries by party
+            //get current assembly entries by party, put last = current in front
             var partywise = []
             for (i = 0; i < parties.length; i++) {
               var currentParty = parties[i];
               var currentEntries = currentAssembly.filter(function(i) {
-                if (currentParty == 'IND') {
-                  return (i.Party === currentParty && i.Last_party != 'None');
-                }
-                else {
-                  return (i.Party === currentParty);
-                }
+                  return (i.Party === currentParty && i.Last_party === currentParty);
             });
+              var currentOther = currentAssembly.filter(function(i) {
+                  return (i.Party === currentParty && i.Last_party !== currentParty);
+            });
+              currentEntries.push.apply(currentEntries, currentOther);
               partywise.push(currentEntries);
-              console.log(partywise);
             }
 
-            //sort other by last party and move 'none' to end
-            if (parties.indexOf('Other') !== -1) {
-              partywise[parties.indexOf('Other')].sort(function(a,b) {return (a.Last_party > b.Last_party) ? 1 : ((b.Last_party > a.Last_party) ? -1 : 0);} ); 
-             partywise[parties.indexOf('Other')].forEach(function(v, i) {
+            //get important parties
+            var xMax = 0;
+            var numCand = 0;
+            for (k = 0; k < partywise.length; k++) {
+              numCand += partywise[k].length;
+              if (partywise[k].length > xMax) {
+                xMax = partywise[k].length;
+              }
+            }
+
+            var inclusionFactor = numCand*0.05;
+            var otherEntries = []
+            var partywiseFiltered = []
+            for (k = 0; k < partywise.length; k++) {
+              if (partywise[k].length >= inclusionFactor) {
+                if (topParties.indexOf(partywise[k][0].Party) < 0) {
+                  topParties.push(partywise[k][0].Party);}
+                partywiseFiltered.push(partywise[k]);
+              }
+              if (partywise[k].length < inclusionFactor) {
+                otherEntries.push.apply(otherEntries, partywise[k]);
+              }
+            }
+
+            partywiseFiltered.push(otherEntries);
+            topParties.splice(3, 1);
+            topParties.sort();
+            topParties.push('Other');
+
+            //sort 'Other' by party
+            partywiseFiltered[partywiseFiltered.length-1].sort(function(a,b) {return (a.Last_party > b.Last_party) ? 1 : ((b.Last_party > a.Last_party) ? -1 : 0);} ); 
+            partywiseFiltered[partywiseFiltered.length-1].forEach(function(v, i) {
               if (v.Last_party == 'None') {
-                partywise[parties.indexOf('Other')].push(partywise[parties.indexOf('Other')][i]);
-                partywise[parties.indexOf('Other')].splice(i, 1);
+                partywiseFiltered[partywiseFiltered.length-1].push(partywiseFiltered[partywiseFiltered.length-1][i]);
+                partywiseFiltered[partywiseFiltered.length-1].splice(i, 1);
               }
             })
-             partywise[parties.indexOf('Other')].forEach(function(v, i) {
+            partywiseFiltered[partywiseFiltered.length-1].forEach(function(v, i) {
                 if (v.Position === 1) {
-                    var a = partywise[parties.indexOf('Other')].splice(i,1);   // removes the item
-                    partywise[parties.indexOf('Other')].unshift(a[0]);         // adds it back to the beginning
+                    var a = partywiseFiltered[partywiseFiltered.length-1].splice(i,1);   // removes the item
+                    partywiseFiltered[partywiseFiltered.length-1].unshift(a[0]);         // adds it back to the beginning
                 }
-              })
-            }
+            })
 
+            //'other' irrelevant parties
+            // for (i = 0; i < mydata.length; i++) {
+            //  if (typeof(mydata[i].Last_party) === 'undefined') {
+            //    mydata[i].Last_party = 'None';
+            //  }
+            //   mydata[i].Party = mydata[i].Party;
+            //   mydata[i].Last_party = mydata[i].Last_party;
+            //   if (!(topParties.includes(mydata[i].Party)) && !(topParties.includes(mydata[i].Last_party))) {
+            //     mydata[i].Party = mydata[i].Party;
+            //     mydata[i].Party = 'Other';
+            //     mydata[i].Last_party = mydata[i].Last_party;
+            //     mydata[i].Last_party = 'Other';
+            //   }
+            //   else if (!(topParties.includes(mydata[i].Party))) {
+            //     mydata[i].Party = mydata[i].Party;
+            //     mydata[i].Party = 'Other';
+            //   }
+            //   else if (!(topParties.includes(mydata[i].Last_party))) {
+            //     mydata[i].Last_party = mydata[i].Last_party;
+            //     mydata[i].Last_party = 'Other';
+            //   }
+            // }
+
+            //get current assembly parties
+            // var lookup = {};
+            // var items = currentAssembly;
+            // var parties = [];
+
+            // for (var item, i = 0; item = items[i++];) {
+            //   var Party = item.Party;
+
+            //   if (!(Party in lookup)) {
+            //     lookup[Party] = 1;
+            //     parties.push(Party);
+            //   }
+            // }
+
+            // //sort parties in alphabetical order
+            // parties.sort();
+
+            // //get current assembly entries by party
+            // var partywise = []
+            // for (i = 0; i < parties.length; i++) {
+            //   var currentParty = parties[i];
+            //   var currentEntries = currentAssembly.filter(function(i) {
+            //     if (currentParty == 'IND') {
+            //       return (i.Party === currentParty && i.Last_party != 'None');
+            //     }
+            //     else {
+            //       return (i.Party === currentParty);
+            //     }
+            // });
+            //   partywise.push(currentEntries);
+            // }
+
+            // //sort other by last party and move 'none' to end
+            // for (k = 0; k < partywiseFiltered.length - 1; k++) {
+            //   var thisParty = []
+            //    partywiseFiltered[k].forEach(function(v, i) {
+            //     if (v.Last_party == topParties[k]) {
+            //       console.log(v.Last_party);
+            //       thisParty.push(v);
+            //       partywiseFiltered[k].splice(i, 1);
+            //     }
+            //   })
+            //   thisParty.push.apply(thisParty, partywiseFiltered[k]);
+            //   partywiseFiltered[k] = thisParty;
+            // }
+            
+            
             //create legendParties array
-            var legendParties = []
-            for (i = 0; i < partywise.length; i++) {
-              legendParties.push(partywise[i][0].Party)
-            }
+            // var legendParties = []
+            // for (i = 0; i < partywise.length; i++) {
+            //   legendParties.push(partywise[i][0].Party)
+            // }
 
             //get colour range for legend parties
             var legendColours = []
-            for (i = 0; i < legendParties.length; i++) {
-              legendColours.push(partyColours[legendParties[i]])
+            for (i = 0; i < topParties.length; i++) {
+              legendColours.push(partyColours[topParties[i]])
             }
 
             //declare colour scale
             var colourScale = d3.scaleOrdinal()
-              .domain(legendParties)
+              .domain(topParties)
               .range(legendColours);
          
     var xMax = 0;
-    for (k = 0; k < partywise.length; k++) {
-      if (partywise[k].length > xMax) {
-        xMax = partywise[k].length;
+    for (k = 0; k < partywiseFiltered.length; k++) {
+      if (partywiseFiltered[k].length > xMax) {
+        xMax = partywiseFiltered[k].length;
       }
     }
 
@@ -299,7 +369,7 @@
     var squareDim = 12, // pixel dimensions of square
         // width = xMax * 17; // horizontal
         // height = partywise.length * (squareDim + 2); // horizontal
-    width = (rowMax + 1) * partywise.length * (Math.sqrt(symbolSize) + 3); // horizontal
+    width = (rowMax + 1) * partywiseFiltered.length * (Math.sqrt(symbolSize) + 3); // horizontal
     var height = (topMargin + xMax/rowMax) * (Math.sqrt(symbolSize));
     //var height = 1000 //vertical
     var legendMargin = 300
@@ -313,9 +383,9 @@
     //generate shapes
      col = -rowMax
      row = -1
-     for (k=0; k<partywise.length; k++) {
+     for (k=0; k<partywiseFiltered.length; k++) {
       svg.selectAll('u')
-        .data(partywise[k])
+        .data(partywiseFiltered[k])
         .enter()
         .append('path')
         .attr('d', d3.symbol().type(function(d) {
@@ -327,7 +397,7 @@
           }
         })
         .size(function(d, i) {
-          return symbolSize*0.4;
+          return symbolSize;
         }))
         .attr("transform", function(d, i) {
           if (i == 0) {
@@ -348,7 +418,7 @@
                 return 0;
             }
             else if (d.Party === 'Other') {
-              return d.Oth_Current;
+              return d.Party;
             }
           else {
               return (partyNames[d.Party]);}
@@ -361,7 +431,7 @@
               return ('None');
             }
             else if (d.Last_party === 'Other') {
-              return d.Oth_Last;
+              return d.Last_party;
             }
             else {
                 return partyNames[d.Last_party];}
@@ -390,12 +460,11 @@
                 return partyColours[d.Last_party];
             }
           })
-        //.style('opacity', 0.5)
         .on("mouseover", function(d, i) {
                                 d3.select(this)
                                   .transition()
                                   .duration(200)
-                                  .style('opacity', 0.5)
+                                  //.style('opacity', 0.5)
                                 div.transition()    
                                     .duration(200)    
                                     .style("opacity", .9); 
@@ -405,9 +474,9 @@
                                             });
 
                                             candHistory.sort(function(a,b) {return b.Assembly_No - a.Assembly_No});
-                                            var tooltipText = d.Candidate + "<hr>" + d.Constituency_Name + ", " + d.Year + ", " + d.Oth_Current + ", #" + d.Position
+                                            var tooltipText = d.Candidate + "<hr>" + d.Constituency_Name + ", " + d.Year + ", " + d.Party + ", #" + d.Position
                                             candHistory.forEach(function(k) {
-                                              tooltipText += "<br/>" + k.Constituency_Name + ", " + k.Year + ", " + k.Oth_Current + ", #" + k.Position
+                                              tooltipText += "<br/>" + k.Constituency_Name + ", " + k.Year + ", " + k.Party + ", #" + k.Position
                                             })
                                             return tooltipText;
                                         })
@@ -418,7 +487,7 @@
                                 d3.select(this)
                                   .transition()
                                   .duration(200)
-                                  .style('opacity', 1) 
+                                  //.style('opacity', 1) 
                                 div.transition()    
                                     .duration(500)    
                                     .style("opacity", 0); 
@@ -429,9 +498,9 @@
         var pattern = new RegExp(searchTerm, 'i')
         col = -rowMax
        row = -1
-       for (k=0; k<partywise.length; k++) {
+       for (k=0; k<partywiseFiltered.length; k++) {
         svg.selectAll('u')
-          .data(partywise[k])
+          .data(partywiseFiltered[k])
           .enter()
           .append('path')
           .attr('d', d3.symbol().type(function(d) {
@@ -443,7 +512,7 @@
             }
           })
           .size(function(d, i) {
-            return symbolSize;
+            return symbolSize*0.6;
           }))
           .attr("transform", function(d, i) {
             if (i == 0) {
@@ -464,7 +533,7 @@
                   return 0;
               }
               else if (d.Party === 'Other') {
-                return d.Oth_Current;
+                return d.Party;
               }
             else {
                 return (partyNames[d.Party]);}
@@ -477,7 +546,7 @@
                 return ('None');
               }
               else if (d.Last_party === 'Other') {
-                return d.Oth_Last;
+                return d.Last_party;
               }
               else {
                   return partyNames[d.Last_party];}
@@ -500,18 +569,18 @@
                                   d3.select(this)
                                     .transition()
                                     .duration(200)
-                                    .style('opacity', 0.5)
+                                    //.style('opacity', 0.5)
                                   div.transition()    
                                       .duration(200)    
-                                      .style("opacity", .9); 
+                                      .style("opacity", .9);
                                       div .html(function() {
                                             var candHistory = mydata.filter(function(k) {
                                               return (k.pid == d.pid && d.Assembly_No > k.Assembly_No);
                                             });
                                             candHistory.sort(function(a,b) {return b.Assembly_No - a.Assembly_No});
-                                            var tooltipText = d.Candidate + "<hr>" + d.Constituency_Name + ", " + d.Year + ", " + d.Oth_Current + ", #" + d.Position
+                                            var tooltipText = d.Candidate + "<hr>" + d.Constituency_Name + ", " + d.Year + ", " + d.Party + ", #" + d.Position
                                             candHistory.forEach(function(k) {
-                                              tooltipText += "<br/>" + k.Constituency_Name + ", " + k.Year + ", " + k.Oth_Current + ", #" + k.Position
+                                              tooltipText += "<br/>" + k.Constituency_Name + ", " + k.Year + ", " + k.Party + ", #" + k.Position
                                             })
                                             return tooltipText;
                                         })
@@ -522,10 +591,10 @@
                                   d3.select(this)
                                     .transition()
                                     .duration(200)
-                                    .style('opacity', 1) 
+                                    //.style('opacity', 1) 
                                   div.transition()    
                                       .duration(500)    
-                                      .style("opacity", 0); 
+                                      .style('opacity', 0); 
                               });
           }
 
@@ -534,9 +603,9 @@
            col = -rowMax
            row = -1
            letterArray = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
-           for (j = 0; j < partywise.length; j++) {
+           for (j = 0; j < partywiseFiltered.length; j++) {
             svg.selectAll(letterArray[j])
-              .data(partywise[j])
+              .data(partywiseFiltered[j])
               .enter()
               .append('text')
               .attr("x", function(d, i) {
@@ -587,7 +656,7 @@
                       return 0;
                   }
                   else if (d.Party === 'Other') {
-                    return d.Oth_Current;
+                    return d.Party;
                   }
                 else {
                     return (partyNames[d.Party]);}
@@ -600,7 +669,7 @@
                     return ('None');
                   }
                   else if (d.Last_party === 'Other') {
-                    return d.Oth_Last;
+                    return d.Last_party;
                   }
                   else {
                       return partyNames[d.Last_party];}
@@ -647,9 +716,9 @@
                                               return (k.pid == d.pid && d.Assembly_No > k.Assembly_No);
                                             });
                                             candHistory.sort(function(a,b) {return b.Assembly_No - a.Assembly_No});
-                                            var tooltipText = d.Candidate + "<hr>" + d.Constituency_Name + ", " + d.Year + ", " + d.Oth_Current + ", #" + d.Position
+                                            var tooltipText = d.Candidate + "<hr>" + d.Constituency_Name + ", " + d.Year + ", " + d.Party + ", #" + d.Position
                                             candHistory.forEach(function(k) {
-                                              tooltipText += "<br/>" + k.Constituency_Name + ", " + k.Year + ", " + k.Oth_Current + ", #" + k.Position
+                                              tooltipText += "<br/>" + k.Constituency_Name + ", " + k.Year + ", " + k.Party + ", #" + k.Position
                                             })
                                             return tooltipText;
                                         }) 
@@ -667,13 +736,13 @@
       //create legend
             svg.append("g")
               .attr("class", "legendOrdinal")
-              .attr("transform", "translate(" + width/(partywise.length*2.5) +"," + 5 + ")");
+              .attr("transform", "translate(" + width/(partywiseFiltered.length*2.5) +"," + 5 + ")");
 
             var legendOrdinal = d3.legendColor()
               .orient('horizontal')
               //.shape("path", d3.symbol().type(d3.symbolTriangle).size(100)())
               .shapeWidth(25)
-              .shapePadding(width/(partywise.length*1.35))
+              .shapePadding(width/(partywiseFiltered.length*1.35))
               .scale(colourScale);
 
             svg.select(".legendOrdinal")
@@ -712,7 +781,7 @@
             var wonlost = eval(d3.select('#wonlost').property('value'));
             var turncoats = eval(d3.select('#turncoats').property('value'));
             var searchTerm = d3.select('#search').property('value');
-            d3.selectAll("svg").transition().duration(400).style("opacity", 0).remove();
+            d3.selectAll("svg").transition().duration(0).style("opacity", 0).remove();
             generateGraph(mydata, assemblyNo, nums, wonlost,turncoats,searchTerm);
         });
 
@@ -735,7 +804,7 @@
             var turncoats = eval(d3.select('#turncoats').property('value'));
             var wonlost = eval(d3.select(this).property('value'));
             var searchTerm = d3.select('#search').property('value');
-            d3.selectAll("svg").transition().duration(400).style("opacity", 0).remove();
+            d3.selectAll("svg").transition().duration(0).style("opacity", 0).remove();
             generateGraph(mydata, assemblyNo, nums, wonlost,turncoats,searchTerm);
         });
 
@@ -746,7 +815,7 @@
             var wonlost = eval(d3.select('#wonlost').property('value'));
             var turncoats = eval(d3.select(this).property('value'));
             var searchTerm = d3.select('#search').property('value');
-            d3.selectAll("svg").transition().duration(400).style("opacity", 0).remove();
+            d3.selectAll("svg").transition().duration(0).style("opacity", 0).remove();
             generateGraph(mydata, assemblyNo, nums, wonlost, turncoats, searchTerm);
         });
 
@@ -757,7 +826,7 @@
             var assemblyNo = eval(d3.select('#assemblies').property('value'));
             var turncoats = eval(d3.select('#turncoats').property('value'));
             var wonlost = eval(d3.select('#wonlost').property('value'));
-            d3.selectAll("svg").transition().duration(400).style("opacity", 0).remove();
+            d3.selectAll("svg").transition().duration(0).style("opacity", 0).remove();
             generateGraph(mydata, assemblyNo, nums, wonlost,turncoats,searchTerm);
             console.log(searchTerm);
           })
