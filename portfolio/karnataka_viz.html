@@ -3,11 +3,9 @@
 
   <head>
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro|Montserrat" rel="stylesheet">
-    <link rel="stylesheet" href="/Users/shivangi/Downloads/chosen_v1.8.3/chosen.css">
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/randomcolor/0.5.2/randomColor.min.js"></script>
     <script data-require="d3@4.0.0" data-semver="4.0.0" src="https://d3js.org/d3.v4.min.js"></script>
     <script type="text/javascript" src="https://rawgit.com/susielu/d3-legend/master/d3-legend.min.js"></script>
-    <script type="text/javascript" src="https://rawgit.com/mholt/PapaParse/master/papaparse.min.js"></script>
 <style>
     div.tooltip {   
           position: absolute;           
@@ -61,25 +59,43 @@
             margin: 1.5em 0 0 -100px;
         }
 
+        body {
+          font-family: 'Source Sans Pro';
+        }
+
+        footer {
+          text-align: center;
+        }
+
+       .Site {
+        display: flex;
+        min-height: 100vh;
+        flex-direction: column;
+      }
+
+      .content {
+        flex: 1;
+      }
+
 </style>
   </head>
 
-  <body>
-
+  <body class='Site'>
+<main class='content' align='center'>
+  <div id="heading"><h2>Karnataka: 9th Assembly</h2></div>
     <input type = 'text' id = 'search'>
 
 
-    <label for="assemblies">Assembly</label>
+    <label for="assemblies">Year</label>
     <select id = "assemblies">
-      <option value=2>2nd Assembly</option>
-      <option value=3>3rd Assembly</option> 
-      <option value=4>4th Assembly</option> 
-      <option value=5>5th Assembly</option>
-      <option value=6>6th Assembly</option> 
-      <option value=7>7th Assembly</option> 
-      <option value=8>8th Assembly</option>
-      <option value=9 selected='selected'>9th Assembly</option>
-
+      <option value=2>1983</option>
+      <option value=3>1985</option> 
+      <option value=4>1989</option> 
+      <option value=5>1994</option>
+      <option value=6>1999</option> 
+      <option value=7>2004</option> 
+      <option value=8>2008</option>
+      <option value=9 selected='selected'>2013</option>
   </select>   
 
   <label for="numbers">Label</label>
@@ -104,7 +120,11 @@
   </select>
 
   <br><br>
-    
+
+    <div id="symbolLegend"></div>
+
+    <div id="chart"></div>
+
     <script>
 
     var state = 'Karnataka'
@@ -164,7 +184,7 @@
                                     .attr("class", "tooltip")               
                                     .style("opacity", 0);
 
-            var topParties = ['BJP', 'INC', 'IND', 'None']
+            var topParties = []
 
             //get current assembly entries
             var currentAssembly = mydata.filter(function(i) {
@@ -235,6 +255,7 @@
               }
             }
 
+            //move entries to other
             var inclusionFactor = numCand*0.05;
             var otherEntries = []
             var partywiseFiltered = []
@@ -250,7 +271,6 @@
             }
 
             partywiseFiltered.push(otherEntries);
-            topParties.splice(3, 1);
             topParties.sort();
             topParties.push('Other');
 
@@ -268,82 +288,6 @@
                     partywiseFiltered[partywiseFiltered.length-1].unshift(a[0]);         // adds it back to the beginning
                 }
             })
-
-            //'other' irrelevant parties
-            // for (i = 0; i < mydata.length; i++) {
-            //  if (typeof(mydata[i].Last_party) === 'undefined') {
-            //    mydata[i].Last_party = 'None';
-            //  }
-            //   mydata[i].Party = mydata[i].Party;
-            //   mydata[i].Last_party = mydata[i].Last_party;
-            //   if (!(topParties.includes(mydata[i].Party)) && !(topParties.includes(mydata[i].Last_party))) {
-            //     mydata[i].Party = mydata[i].Party;
-            //     mydata[i].Party = 'Other';
-            //     mydata[i].Last_party = mydata[i].Last_party;
-            //     mydata[i].Last_party = 'Other';
-            //   }
-            //   else if (!(topParties.includes(mydata[i].Party))) {
-            //     mydata[i].Party = mydata[i].Party;
-            //     mydata[i].Party = 'Other';
-            //   }
-            //   else if (!(topParties.includes(mydata[i].Last_party))) {
-            //     mydata[i].Last_party = mydata[i].Last_party;
-            //     mydata[i].Last_party = 'Other';
-            //   }
-            // }
-
-            //get current assembly parties
-            // var lookup = {};
-            // var items = currentAssembly;
-            // var parties = [];
-
-            // for (var item, i = 0; item = items[i++];) {
-            //   var Party = item.Party;
-
-            //   if (!(Party in lookup)) {
-            //     lookup[Party] = 1;
-            //     parties.push(Party);
-            //   }
-            // }
-
-            // //sort parties in alphabetical order
-            // parties.sort();
-
-            // //get current assembly entries by party
-            // var partywise = []
-            // for (i = 0; i < parties.length; i++) {
-            //   var currentParty = parties[i];
-            //   var currentEntries = currentAssembly.filter(function(i) {
-            //     if (currentParty == 'IND') {
-            //       return (i.Party === currentParty && i.Last_party != 'None');
-            //     }
-            //     else {
-            //       return (i.Party === currentParty);
-            //     }
-            // });
-            //   partywise.push(currentEntries);
-            // }
-
-            // //sort other by last party and move 'none' to end
-            // for (k = 0; k < partywiseFiltered.length - 1; k++) {
-            //   var thisParty = []
-            //    partywiseFiltered[k].forEach(function(v, i) {
-            //     if (v.Last_party == topParties[k]) {
-            //       console.log(v.Last_party);
-            //       thisParty.push(v);
-            //       partywiseFiltered[k].splice(i, 1);
-            //     }
-            //   })
-            //   thisParty.push.apply(thisParty, partywiseFiltered[k]);
-            //   partywiseFiltered[k] = thisParty;
-            // }
-            
-            
-            //create legendParties array
-            // var legendParties = []
-            // for (i = 0; i < partywise.length; i++) {
-            //   legendParties.push(partywise[i][0].Party)
-            // }
 
             //get colour range for legend parties
             var legendColours = []
@@ -365,19 +309,18 @@
 
     var symbolSize = 180
     var rowMax = 5
-    var topMargin = 30
+    var topMargin = 50
     var squareDim = 12, // pixel dimensions of square
         // width = xMax * 17; // horizontal
         // height = partywise.length * (squareDim + 2); // horizontal
     width = (rowMax + 1) * partywiseFiltered.length * (Math.sqrt(symbolSize) + 3); // horizontal
-    var height = (topMargin + xMax/rowMax) * (Math.sqrt(symbolSize));
+    var height = topMargin + (xMax/rowMax) * (Math.sqrt(symbolSize) + 5);
     //var height = 1000 //vertical
-    var legendMargin = 300
     
         
-    var svg = d3.select('body')
+    var svg = d3.select('#chart')
       .append('svg')
-      .attr('width', width+legendMargin)
+      .attr('width', width)
       .attr('height', height);
 
     //generate shapes
@@ -569,7 +512,6 @@
                                   d3.select(this)
                                     .transition()
                                     .duration(200)
-                                    //.style('opacity', 0.5)
                                   div.transition()    
                                       .duration(200)    
                                       .style("opacity", .9);
@@ -747,31 +689,14 @@
 
             svg.select(".legendOrdinal")
                 .call(legendOrdinal);
-
-         //create symbol legend
-      circle = d3.symbol().type(d3.symbolCircle).size(200)();
-      square = d3.symbol().type(d3.symbolSquare).size(200)();
-
-      var symbolScale =  d3.scaleOrdinal()
-        .domain(['Winner','Loser'])
-        .range([square, circle] );
-
-      svg.append("g")
-        .attr("class", "legendSymbol")
-        .attr("transform", "translate("+ (width + 20) +", 100)");
-
-      var legendPath = d3.legendSymbol()
-        .scale(symbolScale)
-        .orient("vertical")
-
-
-      svg.select(".legendSymbol")
-        .call(legendPath); 
-
   
     }
 
         generateGraph(mydata, 9, 0, 0, 0, '');
+
+        function getOrdinalNum(n) {
+          return n + (n > 0 ? ['th', 'st', 'nd', 'rd'][(n > 3 && n < 21) || n % 10 > 3 ? 0 : n % 10] : '');
+        }
 
       // handle on click event
         d3.select('#assemblies')
@@ -781,6 +706,7 @@
             var wonlost = eval(d3.select('#wonlost').property('value'));
             var turncoats = eval(d3.select('#turncoats').property('value'));
             var searchTerm = d3.select('#search').property('value');
+            document.getElementById('heading').innerHTML = '<h2>Karnataka: ' + getOrdinalNum(assemblyNo) +' Assembly</h2>'
             d3.selectAll("svg").transition().duration(0).style("opacity", 0).remove();
             generateGraph(mydata, assemblyNo, nums, wonlost,turncoats,searchTerm);
         });
@@ -834,6 +760,8 @@
     });
 
     </script>
+</main>
+    <footer class="footer">Created by <a href="http://shivangitikekar.com">Shivangi Tikekar</a> for the <a href="http://tcpd.ashoka.edu.in">Trivedi Centre for Political Data</a>.</footer>
     
   </body>
 
