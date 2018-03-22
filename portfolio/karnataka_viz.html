@@ -6,6 +6,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/randomcolor/0.5.2/randomColor.min.js"></script>
     <script data-require="d3@4.0.0" data-semver="4.0.0" src="https://d3js.org/d3.v4.min.js"></script>
     <script type="text/javascript" src="https://rawgit.com/susielu/d3-legend/master/d3-legend.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
 <style>
     div.tooltip {   
           position: absolute;           
@@ -80,22 +81,40 @@
 </style>
   </head>
 
-  <body class='Site'>
+<body class='Site'>
 <main class='content' align='center'>
-  <div id="heading"><h2>Karnataka: 9th Assembly</h2></div>
-    <input type = 'text' id = 'search'>
+    <div id="heading"><h2>Karnataka: 2013 Assembly Elections</h2></div>
+    <label for="states">State</label>
+    <select id = "states">
+      <option value='Meghalaya'>Meghalaya</option> 
+      <option value='Nagaland'>Nagaland</option> 
+      <option value='Tripura'>Tripura</option>
+      <option value='Karnataka' selected='selected'>Karnataka</option>
+  </select>
 
+    <input type = 'text' id = 'search'>
 
     <label for="assemblies">Year</label>
     <select id = "assemblies">
-      <option value=2>1983</option>
-      <option value=3>1985</option> 
-      <option value=4>1989</option> 
-      <option value=5>1994</option>
-      <option value=6>1999</option> 
-      <option value=7>2004</option> 
-      <option value=8>2008</option>
-      <option value=9 selected='selected'>2013</option>
+      <option value='1969'>1969</option>
+          <option value='1972'>1972</option> 
+          <option value='1974'>1974</option>
+          <option value='1977'>1977</option>
+          <option value='1982'>1982</option>
+          <option value='1983'>1983</option> 
+          <option value='1985'>1985</option>
+          <option value='1987'>1987</option>
+          <option value='1988'>1988</option>
+          <option value='1989'>1989</option> 
+          <option value='1993'>1993</option>
+          <option value='1994'>1994</option>
+          <option value='1998'>1998</option>
+          <option value='1999'>1999</option> 
+          <option value='2003'>2003</option>
+          <option value='2004'>2004</option>
+          <option value='2008'>2008</option>
+          <option value='2013' selected='selected'>2013</option> 
+          <option value='2018'>2018</option>
   </select>   
 
   <label for="numbers">Label</label>
@@ -119,7 +138,8 @@
       <option value=0 selected='selected'>Previously Contested</option>
   </select>
 
-  <br><br>
+<br><br>
+
 
     <div id="symbolLegend" align='center'>
     <script>
@@ -157,7 +177,11 @@
 
     <script>
 
-    var state = 'Karnataka'
+    function getOrdinalNum(n) {
+          return n + (n > 0 ? ['th', 'st', 'nd', 'rd'][(n > 3 && n < 21) || n % 10 > 3 ? 0 : n % 10] : '');
+        }
+
+    var stateGraph = function(state, year) {
 
     var url = 'http://shivangitikekar.com/portfolio/json/' + state + '_incumbency.json';
     
@@ -208,7 +232,7 @@
 
             var partyNames = {'INC': 'Indian National Congress', 'KJP': 'Karnataka Janata Paksha', 'IND': 'Independent', 'CPI': 'Communist Party of India', 'JD(S)': 'Janata Dal (Secular)', 'NPF': 'Naga People\'s Front', 'SP': 'Samajwadi Party', 'RMP': 'Revolutionary Marxist Party', 'INC(I)': 'Indian National Congress (I)', 'JNP(JP)': 'Janata Party', 'BJP': 'Bharatiya Janata Party', 'JNP(SC)': 'Janata Party (SC)', 'JNP': 'Janata Party', 'JD': 'Janata Dal', 'AIRJP': 'All India Rashtriya Janata Party', 'JD(U)': 'Janata Dal United', 'NCP': 'National Communist Party', 'None': 'None', 'Other': 'Other', 'BSRCP': 'Badagara Shramika Raitala Congress', 'JP': 'Janata Party', 'CPM': 'Communist Party of India (Marxist)', 'UDP': 'United Democratic Party', 'HSPDP': 'Hill State People\'s Democratic Party', 'NPP': 'National People\'s Party'}
 
-        var generateGraph = function(mydata, assemblyNo, nums, wonlost, turncoats, searchTerm) {
+        var generateGraph = function(mydata, year, nums, wonlost, turncoats, searchTerm) {
 
             var div = d3.select("body").append("div")   
                                     .attr("class", "tooltip")               
@@ -218,7 +242,7 @@
 
             //get current assembly entries
             var currentAssembly = mydata.filter(function(i) {
-              return i.Assembly_No === assemblyNo;
+              return i.Year === year;
             });
 
             if (wonlost == 1) {
@@ -302,7 +326,10 @@
 
             partywiseFiltered.push(otherEntries);
             topParties.sort();
-            topParties.push('Other');
+            if (otherEntries.length > 0) {
+              topParties.push('Other');
+            }
+            
 
             //sort 'Other' by party
             partywiseFiltered[partywiseFiltered.length-1].sort(function(a,b) {return (a.Last_party > b.Last_party) ? 1 : ((b.Last_party > a.Last_party) ? -1 : 0);} ); 
@@ -443,10 +470,10 @@
                                     .style("opacity", .9); 
                                     div .html(function() {
                                             var candHistory = mydata.filter(function(k) {
-                                              return (k.pid == d.pid && d.Assembly_No > k.Assembly_No);
+                                              return (k.pid == d.pid && d.Year > k.Year);
                                             });
 
-                                            candHistory.sort(function(a,b) {return b.Assembly_No - a.Assembly_No});
+                                            candHistory.sort(function(a,b) {return b.Year - a.Year});
                                             var tooltipText = d.Candidate + "<hr>" + d.Constituency_Name + ", " + d.Year + ", " + d.Party + ", #" + d.Position
                                             candHistory.forEach(function(k) {
                                               tooltipText += "<br/>" + k.Constituency_Name + ", " + k.Year + ", " + k.Party + ", #" + k.Position
@@ -547,9 +574,9 @@
                                       .style("opacity", .9);
                                       div .html(function() {
                                             var candHistory = mydata.filter(function(k) {
-                                              return (k.pid == d.pid && d.Assembly_No > k.Assembly_No);
+                                              return (k.pid == d.pid && d.Year > k.Year);
                                             });
-                                            candHistory.sort(function(a,b) {return b.Assembly_No - a.Assembly_No});
+                                            candHistory.sort(function(a,b) {return b.Year - a.Year});
                                             var tooltipText = d.Candidate + "<hr>" + d.Constituency_Name + ", " + d.Year + ", " + d.Party + ", #" + d.Position
                                             candHistory.forEach(function(k) {
                                               tooltipText += "<br/>" + k.Constituency_Name + ", " + k.Year + ", " + k.Party + ", #" + k.Position
@@ -685,9 +712,9 @@
                                           .style("opacity", .9); 
                                           div .html(function() {
                                             var candHistory = mydata.filter(function(k) {
-                                              return (k.pid == d.pid && d.Assembly_No > k.Assembly_No);
+                                              return (k.pid == d.pid && d.Year > k.Year);
                                             });
-                                            candHistory.sort(function(a,b) {return b.Assembly_No - a.Assembly_No});
+                                            candHistory.sort(function(a,b) {return b.Year - a.Year});
                                             var tooltipText = d.Candidate + "<hr>" + d.Constituency_Name + ", " + d.Year + ", " + d.Party + ", #" + d.Position
                                             candHistory.forEach(function(k) {
                                               tooltipText += "<br/>" + k.Constituency_Name + ", " + k.Year + ", " + k.Party + ", #" + k.Position
@@ -722,71 +749,138 @@
   
     }
 
-        generateGraph(mydata, 9, 0, 0, 0, '');
-
-        function getOrdinalNum(n) {
-          return n + (n > 0 ? ['th', 'st', 'nd', 'rd'][(n > 3 && n < 21) || n % 10 > 3 ? 0 : n % 10] : '');
-        }
+        generateGraph(mydata, year, 0, 0, 0, '');
 
       // handle on click event
         d3.select('#assemblies')
           .on('change', function() {
-            var assemblyNo = eval(d3.select(this).property('value'));
+            var year = eval(d3.select(this).property('value'));
             var nums = eval(d3.select('#numbers').property('value'));
             var wonlost = eval(d3.select('#wonlost').property('value'));
             var turncoats = eval(d3.select('#turncoats').property('value'));
             var searchTerm = d3.select('#search').property('value');
-            document.getElementById('heading').innerHTML = '<h2>Karnataka: ' + getOrdinalNum(assemblyNo) +' Assembly</h2>'
+            var state = d3.select('#states').property('value');
+            document.getElementById('heading').innerHTML = '<h2>' + state + ': ' + year +' Assembly Elections</h2>'
             d3.selectAll("#chart > svg").transition().duration(0).style("opacity", 0).remove();
-            generateGraph(mydata, assemblyNo, nums, wonlost,turncoats,searchTerm);
+            generateGraph(mydata, year, nums, wonlost,turncoats,searchTerm);
         });
 
         d3.select('#numbers')
           .on('change', function() {
             var nums = eval(d3.select(this).property('value'));
-            var assemblyNo = eval(d3.select('#assemblies').property('value'));
+            var year = eval(d3.select('#assemblies').property('value'));
             var turncoats = eval(d3.select('#turncoats').property('value'));
             var wonlost = eval(d3.select('#wonlost').property('value'));
             var searchTerm = d3.select('#search').property('value');
             d3.selectAll("svg > text").transition().duration(400).style("opacity", 0).remove();
             d3.selectAll("#chart > svg").transition().duration(0).style("opacity", 0).remove();
-            generateGraph(mydata, assemblyNo, nums, wonlost,turncoats,searchTerm);
+            generateGraph(mydata, year, nums, wonlost,turncoats,searchTerm);
         });
 
         d3.select('#wonlost')
           .on('change', function() {
             var nums = eval(d3.select('#numbers').property('value'));
-            var assemblyNo = eval(d3.select('#assemblies').property('value'));
+            var year = eval(d3.select('#assemblies').property('value'));
             var turncoats = eval(d3.select('#turncoats').property('value'));
             var wonlost = eval(d3.select(this).property('value'));
             var searchTerm = d3.select('#search').property('value');
             d3.selectAll("#chart > svg").transition().duration(0).style("opacity", 0).remove();
-            generateGraph(mydata, assemblyNo, nums, wonlost,turncoats,searchTerm);
+            generateGraph(mydata, year, nums, wonlost,turncoats,searchTerm);
         });
 
         d3.select('#turncoats')
           .on('change', function() {
             var nums = eval(d3.select('#numbers').property('value'));
-            var assemblyNo = eval(d3.select('#assemblies').property('value'));
+            var year = eval(d3.select('#assemblies').property('value'));
             var wonlost = eval(d3.select('#wonlost').property('value'));
             var turncoats = eval(d3.select(this).property('value'));
             var searchTerm = d3.select('#search').property('value');
             d3.selectAll("#chart > svg").transition().duration(0).style("opacity", 0).remove();
-            generateGraph(mydata, assemblyNo, nums, wonlost, turncoats, searchTerm);
+            generateGraph(mydata, year, nums, wonlost, turncoats, searchTerm);
         });
 
         d3.select('#search')
           .on('keyup', function() {
             var searchTerm = d3.select(this).property('value');
             var nums = eval(d3.select('#numbers').property('value'));
-            var assemblyNo = eval(d3.select('#assemblies').property('value'));
+            var year = eval(d3.select('#assemblies').property('value'));
             var turncoats = eval(d3.select('#turncoats').property('value'));
             var wonlost = eval(d3.select('#wonlost').property('value'));
             d3.selectAll("#chart > svg").transition().duration(0).style("opacity", 0).remove();
-            generateGraph(mydata, assemblyNo, nums, wonlost,turncoats,searchTerm);
+            generateGraph(mydata, year, nums, wonlost,turncoats,searchTerm);
           })
           
     });
+};
+
+        d3.select('#states')
+          .on('change', function() {
+            var state = d3.select(this).property('value');
+            var year = eval(d3.select('#assemblies').property('value'));
+            document.getElementById('heading').innerHTML = '<h2>' + state + ': ' + year +' Assembly Elections</h2>'
+            d3.selectAll('#chart > p').transition().duration(0).style("opacity", 0).remove();
+            d3.selectAll("#chart > svg").transition().duration(0).style("opacity", 0).remove();
+            stateGraph(state, year);
+            console.log(year);
+            $("#assemblies").val(year);
+            console.log(year);
+        });
+
+          var pairs = [
+              ['Karnataka', 1983],
+              ['Karnataka', 1985],
+              ['Karnataka', 1989],
+              ['Karnataka', 1994],
+              ['Karnataka', 1999],
+              ['Karnataka', 2004],
+              ['Karnataka', 2008],
+              ['Karnataka', 2013],
+              ['Meghalaya', 1978],
+              ['Meghalaya', 1983],
+              ['Meghalaya', 1988],
+              ['Meghalaya', 1993],
+              ['Meghalaya', 1998],
+              ['Meghalaya', 2003],
+              ['Meghalaya', 2008],
+              ['Meghalaya', 2013],
+              ['Meghalaya', 2018],   
+              ['Nagaland', 1969],
+              ['Nagaland', 1974],
+              ['Nagaland', 1977],
+              ['Nagaland', 1982],
+              ['Nagaland', 1987],
+              ['Nagaland', 1989],
+              ['Nagaland', 1993],
+              ['Nagaland', 1998],
+              ['Nagaland', 2003],
+              ['Nagaland', 2008],
+              ['Nagaland', 2013],
+              ['Nagaland', 2018],
+              ['Tripura', 1972],
+              ['Tripura', 1977],
+              ['Tripura', 1983],
+              ['Tripura', 1988],
+              ['Tripura', 1993],
+              ['Tripura', 1998],
+              ['Tripura', 2003],
+              ['Tripura', 2008],
+              ['Tripura', 2013],
+              ['Tripura', 2018],         
+          ];
+
+          var assemblies = $('#assemblies').html();
+          $('#states').change(function() {
+              $('#assemblies').html(assemblies);
+              $('#assemblies option').each(function() {
+                  var rm = true;
+                  for (var i in pairs) {
+                      if ($(this).val() == pairs[i][1] && $('#states').val() == pairs[i][0]) rm = false;
+                  }
+                  if (rm) $(this).remove();
+              });
+          });
+
+      stateGraph('Karnataka', 2013);
 
     </script>
 </main>
