@@ -121,7 +121,37 @@
 
   <br><br>
 
-    <div id="symbolLegend"></div>
+    <div id="symbolLegend" align='center'>
+    <script>
+    var legendWidth = 150;
+
+    var svg = d3.select('#symbolLegend')
+      .append('svg')
+      .attr('height', '50px')
+      .attr('width', legendWidth)
+
+    //create symbol legend
+      circle = d3.symbol().type(d3.symbolCircle).size(180)();
+      square = d3.symbol().type(d3.symbolSquare).size(180)();
+
+      var symbolScale =  d3.scaleOrdinal()
+        .domain(['Winner','Loser'])
+        .range([square, circle] );
+
+      svg.append("g")
+        .attr("class", "legendSymbol")
+        .attr("transform", "translate("+ legendWidth/2 +", 10)");
+
+      var legendPath = d3.legendSymbol()
+        .scale(symbolScale)
+        .shapePadding(40)
+        .orient("horizontal")
+
+
+      svg.select(".legendSymbol")
+        .call(legendPath); 
+      </script>
+    </div>
 
     <div id="chart"></div>
 
@@ -314,7 +344,7 @@
         // width = xMax * 17; // horizontal
         // height = partywise.length * (squareDim + 2); // horizontal
     width = (rowMax + 1) * partywiseFiltered.length * (Math.sqrt(symbolSize) + 3); // horizontal
-    var height = topMargin + (xMax/rowMax) * (Math.sqrt(symbolSize) + 5);
+    var height = topMargin + (xMax/rowMax + 2) * (Math.sqrt(symbolSize) + 5);
     //var height = 1000 //vertical
     
         
@@ -707,7 +737,7 @@
             var turncoats = eval(d3.select('#turncoats').property('value'));
             var searchTerm = d3.select('#search').property('value');
             document.getElementById('heading').innerHTML = '<h2>Karnataka: ' + getOrdinalNum(assemblyNo) +' Assembly</h2>'
-            d3.selectAll("svg").transition().duration(0).style("opacity", 0).remove();
+            d3.selectAll("#chart > svg").transition().duration(0).style("opacity", 0).remove();
             generateGraph(mydata, assemblyNo, nums, wonlost,turncoats,searchTerm);
         });
 
@@ -719,7 +749,7 @@
             var wonlost = eval(d3.select('#wonlost').property('value'));
             var searchTerm = d3.select('#search').property('value');
             d3.selectAll("svg > text").transition().duration(400).style("opacity", 0).remove();
-            d3.selectAll("svg").transition().duration(0).style("opacity", 0).remove();
+            d3.selectAll("#chart > svg").transition().duration(0).style("opacity", 0).remove();
             generateGraph(mydata, assemblyNo, nums, wonlost,turncoats,searchTerm);
         });
 
@@ -730,7 +760,7 @@
             var turncoats = eval(d3.select('#turncoats').property('value'));
             var wonlost = eval(d3.select(this).property('value'));
             var searchTerm = d3.select('#search').property('value');
-            d3.selectAll("svg").transition().duration(0).style("opacity", 0).remove();
+            d3.selectAll("#chart > svg").transition().duration(0).style("opacity", 0).remove();
             generateGraph(mydata, assemblyNo, nums, wonlost,turncoats,searchTerm);
         });
 
@@ -741,7 +771,7 @@
             var wonlost = eval(d3.select('#wonlost').property('value'));
             var turncoats = eval(d3.select(this).property('value'));
             var searchTerm = d3.select('#search').property('value');
-            d3.selectAll("svg").transition().duration(0).style("opacity", 0).remove();
+            d3.selectAll("#chart > svg").transition().duration(0).style("opacity", 0).remove();
             generateGraph(mydata, assemblyNo, nums, wonlost, turncoats, searchTerm);
         });
 
@@ -752,9 +782,8 @@
             var assemblyNo = eval(d3.select('#assemblies').property('value'));
             var turncoats = eval(d3.select('#turncoats').property('value'));
             var wonlost = eval(d3.select('#wonlost').property('value'));
-            d3.selectAll("svg").transition().duration(0).style("opacity", 0).remove();
+            d3.selectAll("#chart > svg").transition().duration(0).style("opacity", 0).remove();
             generateGraph(mydata, assemblyNo, nums, wonlost,turncoats,searchTerm);
-            console.log(searchTerm);
           })
           
     });
