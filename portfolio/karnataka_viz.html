@@ -2,6 +2,7 @@
 <html>
 
   <head>
+    <title>Shivangi Tikekar: Incumbency Visualisation</title>
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro|Montserrat" rel="stylesheet">
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/randomcolor/0.5.2/randomColor.min.js"></script>
     <script data-require="d3@4.0.0" data-semver="4.0.0" src="https://d3js.org/d3.v4.min.js"></script>
@@ -96,7 +97,7 @@
 
     <label for="assemblies">Year</label>
     <select id = "assemblies">
-      <option value='1969'>1969</option>
+          <option value='1969'>1969</option>
           <option value='1972'>1972</option> 
           <option value='1974'>1974</option>
           <option value='1977'>1977</option>
@@ -155,7 +156,7 @@
       square = d3.symbol().type(d3.symbolSquare).size(180)();
 
       var symbolScale =  d3.scaleOrdinal()
-        .domain(['Winner','Loser'])
+        .domain(['Won','Lost'])
         .range([square, circle] );
 
       svg.append("g")
@@ -200,6 +201,79 @@
               }
             }
 
+            // //generate colour range for parties
+            // colours = [
+            //   '#FFCDD2',
+            //   '#E57373',
+            //   '#F44336',
+            //   '#C62828',
+            //   '#FF5252',
+            //   '#F8BBD0',
+            //   '#F48FB1',
+            //   '#F06292',
+            //   '#EC407A',
+            //   '#C2185B',
+            //   '#880E4F',
+            //   '#BA68C8',
+            //   '#9C27B0',
+            //   '#7B1FA2',
+            //   '#4A148C',
+            //   '#673AB7',
+            //   '#4527A0',
+            //   '#311B92',
+            //   '#7986CB',
+            //   '#3F51B5',
+            //   '#283593',
+            //   '#1A237E',
+            //   '#304FFE',
+            //   '#42A5F5',
+            //   '#1565C0',
+            //   '#0D47A1',
+            //   '#4FC3F7',
+            //   '#00ACC1',
+            //   '#00838F',
+            //   '#006064',
+            //   '#26A69A',
+            //   '#00796B',
+            //   '#004D40',
+            //   '#4CAF50',
+            //   '#1B5E20',
+            //   '#558B2F',
+            //   '#B2FF59',
+            //   '#D4E157',
+            //   '#AFB42B',
+            //   '#827717',
+            //   '#F57F17',
+            //   '#FFEB3B',
+            //   '#FFD54F',
+            //   '#FFCC80',
+            //   '#A1887F',
+            //   '#795548',
+            //   '#5D4037',
+            //   '#607D8B'
+            // ]
+            
+            // function shuffle(a) {
+            //     var j, x, i;
+            //     for (i = a.length - 1; i > 0; i--) {
+            //         j = Math.floor(Math.random() * (i + 1));
+            //         x = a[i];
+            //         a[i] = a[j];
+            //         a[j] = x;
+            //     }
+            // }
+
+            // shuffle(colours);
+            // console.log(colours);
+            // console.log(allParties.length);
+            // colourRange = colours.slice(0, allParties.length);
+
+            // //dict of party and colour
+            // var partyColours = {}
+            // for (i = 0; i < allParties.length; i++) {
+            //     partyColours[allParties[i]] = colourRange[i];
+            // }
+
             //generate colour range for parties
             var colourRange = randomColor({
                count: allParties.length,
@@ -212,6 +286,8 @@
             for (i = 0; i < allParties.length; i++) {
                 partyColours[allParties[i]] = colourRange[i];
             }
+
+            console.log(partyColours);
 
             partyColours['BJP'] = '#ff9933'
             partyColours['INC'] = '#138808'
@@ -816,8 +892,8 @@
         d3.select('#states')
           .on('change', function() {
             var state = d3.select(this).property('value');
-            var year = eval(d3.select('#assemblies').property('value'));
-            document.getElementById('heading').innerHTML = '<h2>' + state + ': ' + year +' Assembly Elections</h2>'
+            var year = 2013;
+            document.getElementById('heading').innerHTML = '<h2>' + state + ': 2013 Assembly Elections</h2>'
             d3.selectAll('#chart > p').transition().duration(0).style("opacity", 0).remove();
             d3.selectAll("#chart > svg").transition().duration(0).style("opacity", 0).remove();
             stateGraph(state, year);
@@ -869,6 +945,18 @@
           ];
 
           var assemblies = $('#assemblies').html();
+          $('#states', function() {
+              $('#assemblies').html(assemblies);
+              $('#assemblies option').each(function() {
+                  var rm = true;
+                  for (var i in pairs) {
+                      if ($(this).val() == pairs[i][1] && $('#states').val() == pairs[i][0]) rm = false;
+                  }
+                  if (rm) $(this).remove();
+              });
+          });
+
+          $('#assemblies').html();
           $('#states').change(function() {
               $('#assemblies').html(assemblies);
               $('#assemblies option').each(function() {
@@ -880,7 +968,11 @@
               });
           });
 
+
+
       stateGraph('Karnataka', 2013);
+
+
 
     </script>
 </main>
