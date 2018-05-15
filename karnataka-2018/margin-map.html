@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Karnataka 2018: Vote Margins</title>
+  <link href="https://fonts.googleapis.com/css?family=PT+Sans|Montserrat" rel="stylesheet">
+  <script type="text/javascript" src="http://d3js.org/d3.v4.min.js"></script>
+  <script type="text/javascript"
+  src="https://cdnjs.cloudflare.com/ajax/libs/randomcolor/0.5.2/randomColor.min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.13.0/d3-legend.js"></script>
+  <style type="text/css">
+  div.tooltip {
+    position: absolute;
+    text-align: center;
+    padding: 8px;
+    font: 1vw 'Source Sans Pro';
+    color: white;
+    background: black;
+    border-radius: 2px;
+    pointer-events: none;
+  }
+
+  h3 {
+    font-size: 18px;
+    padding: 2px;
+  }
+
+  body {
+    font-family: 'PT Sans';
+    }   /*use this to change legend label font*/
+
+    .d3-legend text {
+      font-family: 'Source Sans Pro';
+      font-size: 15px;
+      }   /*does not work for some reason?*/
+
+      </style>
+    </head>
+    <body>
+      <h1>Karnataka 2018: Vote Margins</h1>
+      This map shows the victory margin percentage for constituencies. Lower opacity indicates a lower margin. Hover to see more details.<br><br>
+      <script type="text/javascript">
+      var w = 700;
+      var h = 1000;
+
+      var projection = d3.geoMercator()
+      .translate([w/2, h/2])
+            .scale([7000]); //8000
+
+            var path = d3.geoPath()
+            .projection(projection);
+
+            var svg = d3.select("body")
+            .append("svg")
+            .attr("width", w)
+            .attr("height", h);
+
+            var div = d3.select("body")
+            .append("div")   
+            .attr("class", "tooltip")               
+            .style("opacity", 0);
+
+            var partyNames = {
+              'INC': 'Indian National Congress',
+              'KJP': 'Karnataka Janata Paksha',
+              'IND': 'Independent',
+              'BJP': 'Bharatiya Janata Party',
+              'JD(S)': 'Janata Dal (Secular)',
+              'BSP': 'Bahujan Samaj Party',
+              'KPJP': 'Karnataka Pragnyavantha Janatha Party',
+              'BSRCP': 'Badavara Shramikara Raitara Congress',
+              'KMP': 'Karnataka Makkala Paksha',
+              'SP': 'Samajwadi Party'}
+
+              var partyColours = {};
+              partyColours['BJP'] = '#fa8c1d';
+              partyColours['INC'] = '#2a1fc6';
+              partyColours['JD(S)'] = 'green';
+              partyColours['BSP'] = '#EC407A';
+              partyColours['IND'] = '#008080';
+              partyColours['KPJP'] = '#2196F3';
+
+              d3.csv("http://shivangitikekar.com/karnataka-2018/2018-margin.csv", function(data) {
+
+                d3.json("http://shivangitikekar.com/karnataka-2018/Karnataka_GeoJSON.geojson", function(json) {
+
+                  for (var i = 0; i < data.length; i++) {
+
+                    var dataCons = data[i].Constituency_No;
+
+                    var dataValue = data[i].Party;
+
+
+                    for (var j = 0; j < json.features.length; j++)  {
+                      var jsonCons = json.features[j].properties.ASSEMBLY;
+                      if (dataCons == jsonCons) {
+                        json.features[j].properties.Candidate = data[i].Candidate;
+                        json.features[j].properties.Party = dataValue;
+                        json.features[j].properties.Margin = data[i].Margin;
+                        json.features[j].properties.Votes = data[i].Votes;
+                        json.features[j].properties.Margin_PC = data[i].Margin_PC;
+                        break;
+                      }
+                    }
+                  }
+
+                  var legendColours = [];
+                  var legendParties = [];
+
+                  var keys = $.map(partyColours, function(value, key) {legendParties.push(key)});
+                //legendParties.sort();
+                var values = legendParties.forEach(function(i){
+                  legendColours.push(partyColours[i]);
+                })
+
+                svg.selectAll("path")
+                .data(json.features)
+                .enter()
+                .append("path")
+                .attr("d", path)
+                .attr("transform", "translate(-9300, 1800)") //-10650,2100
+                .style("stroke", "#000")
+                .style("stroke-width", "1")
+                .style("fill", function(d) {
+                  if (!(d.properties.Party in partyColours)) {
+                    var colour = randomColor()
+                    partyColours[d.properties.Party] = colour;
+                  }
+                    return partyColours[d.properties.Party];
+                })
+                .style("fill-opacity", function (d) {
+                  return(d.properties.Margin_PC)/5;
+                })
+                .on("mouseover", function (d) {
+                    // d3.select(this)
+                    // .transition()
+                    // .duration(200)
+                    // .style("opacity", 0.6)
+                    div.transition()
+                    .duration(200)
+                    .style("opacity", .9);
+                    div.html(function () {
+                      if (d.properties.ASSEMBLY == 173) {
+                        return "<h3>JAYANAGARA</h3>Elections not yet held";
+                      }
+                      else if (d.properties.ASSEMBLY == 154) {
+                        return "<h3>RAJARAJESHWARINAGAR</h3>Elections not yet held";
+                      }
+                      else{
+                        return "<h3>" + d.properties.ASSEMBLY_1 + "</h3>" + d.properties.Candidate + "<br>(" + partyNames[d.properties.Party] + ")<br>Votes: " + d.properties.Votes + "<br>Margin: " + d.properties.Margin + "<br>(" + parseFloat(d.properties.Margin_PC).toFixed(2) + "%)";}
+                      })
+                    .style("left", (d3.event.pageX) + "px")
+                    .style("top", (d3.event.pageY - 28) + "px");   
+                })
+.on("mousemove", function () {
+    return div.style("top",
+      (d3.event.pageY - 10) + "px").style("left", (d3.event.pageX + 10) + "px");
+})
+.on("mouseout", function (d) {
+    // d3.select(this)
+    // .transition()
+    // .duration(200)
+    // .style("opacity", 1)
+    div.transition()
+    .duration(500)
+    .style("opacity", 0);
+});
+
+
+var colourScale = d3.scaleOrdinal()
+.domain(legendParties)
+.range(legendColours);
+
+svg.append("g")
+.attr("class", "legendOrdinal")
+.attr("transform", "translate(" + 0 + "," + 0 + ")");
+
+var legendOrdinal = d3.legendColor()
+.orient('vertical')
+.shapeWidth(25)
+.shapePadding(3)
+.scale(colourScale);
+
+svg.select(".legendOrdinal")
+.call(legendOrdinal);
+
+
+});
+});          
+
+</script><br>
+By <a href="http://shivangitikekar.com">Shivangi Tikekar</a>, <a href="http://tcpd.ashoka.edu.in">Trivedi Centre for Political Data</a>
+</body>
+</html>
